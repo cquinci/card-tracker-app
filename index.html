@@ -13,33 +13,64 @@
         .navbar { 
             background: var(--surface); 
             position: sticky; top: 0; z-index: 50; 
-            padding: 1rem; border-bottom: 1px solid var(--border); 
-            display: flex; 
-            /* CHANGE: Align logo and tabs */
-            justify-content: space-between; 
-            align-items: center; 
+            padding: 1rem; 
+            border-bottom: 1px solid var(--border); 
+            
+            /* Enable wrapping by default (mobile first) */
+            display: flex;
+            flex-direction: column; /* Stack vertically on small screens */
+            gap: 0.75rem; /* Gap between logo/tabs */
+            align-items: center; /* Center items when stacked */
+            
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
         }
-        .nav-btn { background: none; border: none; padding: 0.5rem 1rem; font-weight: 600; color: var(--text-light); border-radius: 20px; transition: all 0.2s; font-size: 0.95rem; }
+        
+        /* Desktop/Tablet - Switch back to horizontal layout */
+        @media (min-width: 600px) {
+            .navbar {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                gap: 1rem;
+            }
+        }
+        
+        .nav-btn { 
+            background: none; border: none; padding: 0.5rem 1rem; 
+            font-weight: 600; color: var(--text-light); border-radius: 20px; 
+            transition: all 0.2s; font-size: 0.95rem; 
+        }
         .nav-btn.active { background: var(--primary); color: white; }
         
-        /* NEW: Logo container and image style */
+        /* Logo container and image style */
         .header-brand {
             display: flex;
             align-items: center;
             font-size: 1.25rem;
             font-weight: 800;
+            /* Ensures it doesn't shrink and stays visible on mobile */
+            flex-shrink: 0; 
         }
         .header-brand img {
-            height: 32px; /* Set a fixed height for the logo */
+            height: 32px; 
             width: auto;
-            margin-right: 10px; /* Space between logo and text */
+            margin-right: 10px; 
         }
         .header-tabs {
             display: flex;
             gap: 1rem;
+            /* Allow tabs to scroll slightly if needed, but not the whole header */
             overflow-x: auto;
             white-space: nowrap;
+            /* Ensures tabs take available space on desktop */
+            width: 100%; 
+            justify-content: center; /* Center buttons on mobile */
+        }
+        @media (min-width: 600px) {
+             .header-tabs {
+                width: auto;
+                justify-content: flex-end; /* Push buttons to the right on desktop */
+             }
         }
 
 
@@ -253,7 +284,7 @@
 
     <script>
         // *** PASTE YOUR DEPLOYED WEB APP URL HERE ***
-        const API_URL = "https://script.google.com/macros/s/AKfycbx0r0Q0S2RQoiHLlmyg-xa6uQ7zmf90_boJ14c_ISDYqwuk7IcAJSkKc9jfcqasPqjz3Q/exec";
+        const API_URL = "hhttps://script.google.com/macros/s/AKfycbx0r0Q0S2RQoiHLlmyg-xa6uQ7zmf90_boJ14c_ISDYqwuk7IcAJSkKc9jfcqasPqjz3Q/exec";
 
         let appData = { inventory: [], dashboard: [], buyers: [], locations: [] };
         let currentFilters = {}; 
@@ -363,7 +394,8 @@
                     <div class="card-content">
                         <div class="card-player">${c.player}</div>
                         <div class="card-info">${c.year} ${c.set} | ${c.sku}</div>
-                        ${parallel ? `<div class="card-parallel">${parallel}</div>` : ''} <div class="card-price" style="color:${isSold ? 'var(--green)' : 'var(--text)'}">
+                        ${parallel ? `<div class="card-parallel">${parallel}</div>` : ''}
+                        <div class="card-price" style="color:${isSold ? 'var(--green)' : 'var(--text)'}">
                             ${isSold ? 'Sold: '+fmt(c.soldPrice) : fmt(c.price)}
                         </div>
                     </div>
