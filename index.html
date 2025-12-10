@@ -15,17 +15,13 @@
             position: sticky; top: 0; z-index: 50; 
             padding: 1rem; 
             border-bottom: 1px solid var(--border); 
-            
-            /* Enable wrapping by default (mobile first) */
             display: flex;
-            flex-direction: column; /* Stack vertically on small screens */
-            gap: 0.75rem; /* Gap between logo/tabs */
-            align-items: center; /* Center items when stacked */
-            
+            flex-direction: column; 
+            gap: 0.75rem; 
+            align-items: center; 
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
         }
         
-        /* Desktop/Tablet - Switch back to horizontal layout */
         @media (min-width: 600px) {
             .navbar {
                 flex-direction: row;
@@ -35,42 +31,14 @@
             }
         }
         
-        .nav-btn { 
-            background: none; border: none; padding: 0.5rem 1rem; 
-            font-weight: 600; color: var(--text-light); border-radius: 20px; 
-            transition: all 0.2s; font-size: 0.95rem; 
-        }
+        .nav-btn { background: none; border: none; padding: 0.5rem 1rem; font-weight: 600; color: var(--text-light); border-radius: 20px; transition: all 0.2s; font-size: 0.95rem; }
         .nav-btn.active { background: var(--primary); color: white; }
         
-        /* Logo container and image style */
-        .header-brand {
-            display: flex;
-            align-items: center;
-            font-size: 1.25rem;
-            font-weight: 800;
-            /* Ensures it doesn't shrink and stays visible on mobile */
-            flex-shrink: 0; 
-        }
-        .header-brand img {
-            height: 32px; 
-            width: auto;
-            margin-right: 10px; 
-        }
-        .header-tabs {
-            display: flex;
-            gap: 1rem;
-            /* Allow tabs to scroll slightly if needed, but not the whole header */
-            overflow-x: auto;
-            white-space: nowrap;
-            /* Ensures tabs take available space on desktop */
-            width: 100%; 
-            justify-content: center; /* Center buttons on mobile */
-        }
+        .header-brand { display: flex; align-items: center; font-size: 1.25rem; font-weight: 800; flex-shrink: 0; }
+        .header-brand img { height: 32px; width: auto; margin-right: 10px; }
+        .header-tabs { display: flex; gap: 1rem; overflow-x: auto; white-space: nowrap; width: 100%; justify-content: center; }
         @media (min-width: 600px) {
-             .header-tabs {
-                width: auto;
-                justify-content: flex-end; /* Push buttons to the right on desktop */
-             }
+             .header-tabs { width: auto; justify-content: flex-end; }
         }
 
 
@@ -106,8 +74,19 @@
 
         /* Inventory Grid */
         .card-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-        .card-item { background: var(--surface); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); position: relative; cursor: pointer; transition: transform 0.1s; }
+        .card-item { 
+            background: var(--surface); border-radius: 10px; overflow: hidden; 
+            border: 1px solid var(--border); position: relative; cursor: pointer; 
+            transition: transform 0.1s; 
+            display: flex; flex-direction: column; 
+        }
         .card-item:active { transform: scale(0.98); }
+        
+        /* NEW: Unlisted highlight */
+        .card-unlisted {
+            border-left: 4px solid var(--red);
+        }
+        
         .status-strip { height: 5px; width: 100%; }
         .status-strip.sold { background: var(--green); } .status-strip.avail { background: var(--primary); }
         .card-content { padding: 12px; }
@@ -386,10 +365,14 @@
 
             container.innerHTML = cards.map((c, index) => {
                 const isSold = c.status === 'Sold';
-                const parallel = c.parallel || ''; // Get Parallel/Variant
+                const parallel = c.parallel || ''; 
+                const isListed = String(c.listed).toUpperCase() === 'TRUE';
+                
+                // Determine if the card needs the red "unlisted" border
+                const cardClass = !isListed && !isSold ? 'card-unlisted' : '';
 
                 return `
-                <div class="card-item" onclick="openCardFiltered(${index})">
+                <div class="card-item ${cardClass}" onclick="openCardFiltered(${index})">
                     <div class="status-strip ${isSold ? 'sold' : 'avail'}"></div>
                     <div class="card-content">
                         <div class="card-player">${c.player}</div>
