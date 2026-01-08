@@ -9,20 +9,17 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding-bottom: 90px; color: var(--text); overflow-x: hidden; }
 
-        /* Navbar - Optimized for Mobile */
         .navbar { background: var(--surface); position: sticky; top: 0; z-index: 100; padding: 0.75rem; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .header-brand { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; }
         .header-tabs { display: flex; width: 100%; justify-content: space-around; gap: 5px; }
         
-        .nav-btn { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 0.6rem; font-weight: 700; color: var(--text-light); border-radius: 12px; font-size: 0.85rem; cursor: pointer; transition: 0.2s; }
+        .nav-btn { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 0.6rem; font-weight: 700; color: var(--text-light); border-radius: 12px; font-size: 0.85rem; cursor: pointer; }
         .nav-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Layout Containers */
         .view { display: none; padding: 1rem; width: 100%; max-width: 600px; margin: 0 auto; }
         .view.active { display: block; animation: fade 0.2s ease-in; }
         @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Global Summary - Grid adjusted for Mobile */
         .global-summary { background: #1e293b; color: white; border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .gs-box.full { grid-column: 1 / -1; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 5px; text-align: center; }
         .gs-box { text-align: center; padding: 5px; }
@@ -30,17 +27,15 @@
         .gs-val { font-size: 1rem; font-weight: 700; }
         .gs-val.large { font-size: 1.6rem; }
 
-        /* Dashboard & Supply Cards */
-        .dash-card { background: var(--surface); border-radius: 14px; padding: 1rem; margin-bottom: 1rem; border: 1px solid var(--border); cursor: pointer; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .dash-card { background: var(--surface); border-radius: 14px; padding: 1rem; margin-bottom: 1rem; border: 1px solid var(--border); cursor: pointer; position: relative; }
         .dash-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
         .dash-title { font-weight: 800; font-size: 1rem; color: var(--text); line-height: 1.2; }
         .dash-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; background: var(--bg); padding: 8px; border-radius: 10px; text-align: center; }
         .stat-label { font-size: 0.55rem; color: var(--text-light); text-transform: uppercase; }
         .stat-val { font-weight: 700; font-size: 0.8rem; }
 
-        /* Inventory Grid - Responsive */
         .card-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .card-item { background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative; min-height: 130px; display: flex; flex-direction: column; }
+        .card-item { background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative; min-height: 130px; display: flex; flex-direction: column; cursor: pointer; }
         .card-unlisted { border: 2px solid var(--orange); }
         .unlisted-tag { background: var(--orange); color: white; font-size: 0.55rem; font-weight: 900; padding: 2px 5px; position: absolute; top: 8px; right: 5px; border-radius: 4px; z-index: 10; }
         .status-strip { height: 4px; width: 100%; }
@@ -49,23 +44,22 @@
         .card-content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
         .card-player { font-weight: 800; font-size: 0.85rem; line-height: 1.1; margin-bottom: 4px; }
         .card-parallel-tag { display: inline-block; background: var(--blue-light); color: var(--primary); font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; align-self: flex-start; margin-bottom: 4px; }
-        .card-info { font-size: 0.7rem; color: var(--text-light); }
 
-        /* Form Elements */
         .controls { margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; }
-        .search-bar { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-size: 1rem; -webkit-appearance: none; }
-        .filter-row { display: flex; gap: 8px; }
+        .search-bar { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-size: 1rem; }
         .filter-select { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); font-size: 0.85rem; }
 
-        /* Modal - Full screen on mobile */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 200; display: none; justify-content: center; align-items: flex-end; }
         .modal-overlay.open { display: flex; }
         .modal-content { background: var(--surface); width: 100%; border-radius: 20px 20px 0 0; padding: 20px; max-height: 90vh; overflow-y: auto; }
-        .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; align-items: center; }
         .detail-label { color: var(--text-light); }
         .detail-val { font-weight: 700; }
 
-        /* Loading Spinner */
+        .btn-action { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+
         #loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--surface); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
         .spinner { border: 4px solid var(--border); border-top: 4px solid var(--primary); border-radius: 50%; width: 35px; height: 35px; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -75,7 +69,7 @@
 
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <p style="margin-top:10px; font-size:0.9rem; font-weight:600;">Loading Tracker...</p>
+        <p style="margin-top:10px; font-size:0.9rem; font-weight:600;">Processing...</p>
     </div>
 
     <nav class="navbar">
@@ -95,7 +89,7 @@
     <div id="inventory" class="view">
         <div class="controls">
             <input type="text" id="search" class="search-bar" placeholder="Search Player..." onkeyup="filterCards()">
-            <div class="filter-row">
+            <div style="display:flex; gap:8px;">
                 <select id="filter-sku" class="filter-select" onchange="filterCards()"><option value="">All Lots</option></select>
                 <select id="filter-status" class="filter-select" onchange="filterCards()">
                     <option value="">Status</option>
@@ -109,6 +103,7 @@
 
     <div id="supplies" class="view">
         <div id="supply-global-header"></div>
+        <button class="btn-action btn-primary" onclick="openSupplyModal()" style="margin-bottom:15px;">+ Add New Supply</button>
         <div id="supply-list"></div>
     </div>
 
@@ -116,17 +111,15 @@
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h2 id="m-title" style="margin:0; font-size:1.2rem;">Details</h2>
-                <button onclick="closeModal()" style="background:var(--bg); border:none; width:30px; height:30px; border-radius:50%; font-size:1.2rem; cursor:pointer;">&times;</button>
+                <button onclick="closeModal()" style="background:var(--bg); border:none; width:30px; height:30px; border-radius:50%; font-size:1.2rem;">&times;</button>
             </div>
-            
             <div id="view-mode">
                 <div id="modal-details"></div>
-                <button class="btn btn-primary" onclick="toggleEditMode(true)" style="background:var(--primary); color:white; width:100%; border:none; padding:15px; border-radius:12px; font-weight:700; margin-top:15px;">Edit Card</button>
+                <button class="btn-action btn-primary" onclick="toggleEditMode(true)" style="margin-top:15px;">Edit Card / Mark Sold</button>
             </div>
-
             <div id="edit-mode" style="display:none;">
                 <input type="hidden" id="e-sku">
-                <div class="detail-row">
+                <div class="detail-row" style="background:var(--blue-light); padding:10px; border-radius:10px; border:none;">
                     <span>Listed on eBay</span>
                     <input type="checkbox" id="e-listed" style="width:22px; height:22px;">
                 </div>
@@ -139,19 +132,50 @@
                 </div>
                 <div id="sold-fields" style="display:none;">
                     <div class="detail-row"><span>Sold Price</span><input type="number" id="e-soldPrice" class="filter-select" style="max-width:120px;"></div>
+                    <div class="detail-row"><span>Date</span><input type="date" id="e-soldDate" class="filter-select"></div>
+                    <div class="detail-row">
+                        <span>Buyer</span>
+                        <div style="display:flex; gap:5px;">
+                            <select id="e-buyer" class="filter-select"></select>
+                            <button onclick="addNewBuyer()" style="background:var(--primary); color:white; border:none; border-radius:8px; width:35px; font-weight:bold;">+</button>
+                        </div>
+                    </div>
+                    <div class="detail-row"><span>Location</span><select id="e-location" class="filter-select"></select></div>
+                    <div class="detail-row"><span>Shipping</span><input type="number" id="e-shipping" class="filter-select" style="max-width:120px;"></div>
                 </div>
-                <button class="btn btn-primary" onclick="saveCard()" style="width:100%; padding:15px; margin-top:20px; border-radius:12px; border:none; background:var(--primary); color:white; font-weight:700;">Save Changes</button>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button class="btn-action btn-outline" onclick="toggleEditMode(false)">Cancel</button>
+                    <button class="btn-action btn-primary" onclick="saveCard()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="supply-modal" onclick="if(event.target.id==='supply-modal') closeSupplyModal()">
+        <div class="modal-content">
+            <h2 style="margin:0 0 20px 0; font-size:1.2rem;">Log New Supply</h2>
+            <div class="detail-row"><span>Item Name</span><input type="text" id="s-item" class="filter-select" placeholder="e.g. Envelopes"></div>
+            <div class="detail-row"><span>Purchase Date</span><input type="date" id="s-date" class="filter-select"></div>
+            <div class="detail-row"><span>Location</span><input type="text" id="s-loc" class="filter-select" placeholder="Amazon/eBay"></div>
+            <div class="detail-row"><span>Quantity</span><input type="number" id="s-qty" class="filter-select"></div>
+            <div class="detail-row"><span>Total Paid</span><input type="number" id="s-paid" class="filter-select"></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn-action btn-outline" onclick="closeSupplyModal()">Cancel</button>
+                <button class="btn-action btn-primary" onclick="saveSupply()">Add Supply</button>
             </div>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycby2tX7YqIoWzgWCzIcU8n1Zlhvv0EzgIW_lhbAL1v7MOJ_pb1xxveHOrmSNraqjZrD5pw/exec";
-        let appData = { inventory: [], dashboard: [], supplies: [], globalSupplyTotal: 0 };
+        const API_URL = "https://script.google.com/macros/s/AKfycbx0eAFTcsgykgXXmFVCkW-FIekrlOObkM_wzpkqyZkSkKuUFYiXljlsHrC4sXibeVRmVA/exec";
+        let appData = { inventory: [], dashboard: [], supplies: [], buyers: [], locations: [], globalSupplyTotal: 0 };
 
         function setLoading(b) { document.getElementById('loading-overlay').style.display = b ? 'flex' : 'none'; }
         function fmt(v) { return new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(v||0); }
         function closeModal() { document.getElementById('modal').classList.remove('open'); }
+        function openSupplyModal() { document.getElementById('supply-modal').classList.add('open'); }
+        function closeSupplyModal() { document.getElementById('supply-modal').classList.remove('open'); }
+        
         function toggleEditMode(e) { 
             document.getElementById('view-mode').style.display = e ? 'none' : 'block';
             document.getElementById('edit-mode').style.display = e ? 'block' : 'none';
@@ -178,11 +202,21 @@
                 renderDashboard();
                 renderInventory(appData.inventory);
                 renderSupplies();
-                
-                const skus = [...new Set(appData.inventory.map(i => i.collectionId))];
-                document.getElementById('filter-sku').innerHTML = '<option value="">All Lots</option>' + skus.map(s => `<option value="${s}">${s}</option>`).join('');
+                populateDropdowns();
             } catch (err) { console.error(err); }
             setLoading(false);
+        }
+
+        function populateDropdowns() {
+            const buyers = document.getElementById('e-buyer');
+            const locations = document.getElementById('e-location');
+            const skuFilter = document.getElementById('filter-sku');
+            
+            buyers.innerHTML = '<option value="">Select Buyer...</option>' + appData.buyers.map(b => `<option value="${b}">${b}</option>`).join('');
+            locations.innerHTML = '<option value="">Select Location...</option>' + appData.locations.map(l => `<option value="${l}">${l}</option>`).join('');
+            
+            const skus = [...new Set(appData.inventory.map(i => i.collectionId))];
+            skuFilter.innerHTML = '<option value="">All Lots</option>' + skus.map(s => `<option value="${s}">${s}</option>`).join('');
         }
 
         function renderDashboard() {
@@ -209,7 +243,6 @@
                 const diff = i.sales - i.cost;
                 const percent = i.cost > 0 ? (diff / i.cost) * 100 : 0;
                 const isProfitable = diff >= 0;
-
                 return `
                 <div class="dash-card" onclick="goToInventory('${i.id}')">
                     <div class="dash-header">
@@ -229,24 +262,20 @@
         }
 
         function renderSupplies() {
-            const supplyTotal = appData.globalSupplyTotal || 0;
-            
-            // Added Supply Total here at the top of the supply tab
             document.getElementById('supply-global-header').innerHTML = `
                 <div class="global-summary" style="background:#334155;">
                     <div class="gs-box full">
                         <div class="gs-label">Total Supply Investment</div>
-                        <div class="gs-val large">${fmt(supplyTotal)}</div>
+                        <div class="gs-val large">${fmt(appData.globalSupplyTotal)}</div>
                     </div>
                 </div>`;
-
             document.getElementById('supply-list').innerHTML = appData.supplies.map(s => `
                 <div class="dash-card" style="border-left: 4px solid var(--text-light); cursor:default;">
                     <div class="dash-header">
                         <div class="dash-title" style="font-size:0.9rem;">${s.item}</div>
                         <div class="stat-val" style="font-size:0.95rem;">${fmt(s.totalPaid)}</div>
                     </div>
-                    <div style="font-size:0.75rem; color:var(--text-light);">${s.date} | Qty: ${s.qty}</div>
+                    <div style="font-size:0.75rem; color:var(--text-light);">${s.date} | Qty: ${s.qty} | ${s.location}</div>
                 </div>`).join('');
         }
 
@@ -281,22 +310,58 @@
             document.getElementById('e-sku').value = card.sku;
             document.getElementById('e-listed').checked = String(card.listed).toUpperCase() === 'TRUE';
             document.getElementById('e-status').value = card.status;
+            document.getElementById('e-soldPrice').value = card.soldPrice || '';
+            document.getElementById('e-buyer').value = card.soldTo || '';
+            document.getElementById('e-location').value = card.location || '';
+            document.getElementById('e-shipping').value = card.shipping || '';
             toggleEditMode(false);
+            toggleSoldFields();
             document.getElementById('modal').classList.add('open');
         }
 
         async function saveCard() {
             setLoading(true);
+            const status = document.getElementById('e-status').value;
             const params = new URLSearchParams({
                 action: 'update',
                 sku: document.getElementById('e-sku').value,
                 listed: document.getElementById('e-listed').checked,
-                status: document.getElementById('e-status').value,
-                soldPrice: document.getElementById('e-soldPrice').value
+                status: status
             });
+            if (status === 'Sold') {
+                params.append('soldPrice', document.getElementById('e-soldPrice').value);
+                params.append('soldDate', document.getElementById('e-soldDate').value);
+                params.append('soldTo', document.getElementById('e-buyer').value);
+                params.append('location', document.getElementById('e-location').value);
+                params.append('shipping', document.getElementById('e-shipping').value);
+            }
             await fetch(`${API_URL}?${params.toString()}`);
             closeModal();
             await init();
+        }
+
+        async function saveSupply() {
+            setLoading(true);
+            const params = new URLSearchParams({
+                action: 'addSupply',
+                item: document.getElementById('s-item').value,
+                date: document.getElementById('s-date').value,
+                loc: document.getElementById('s-loc').value,
+                qty: document.getElementById('s-qty').value,
+                paid: document.getElementById('s-paid').value
+            });
+            await fetch(`${API_URL}?${params.toString()}`);
+            closeSupplyModal();
+            await init();
+        }
+
+        async function addNewBuyer() {
+            const name = prompt("New Buyer Name:");
+            if(name) {
+                setLoading(true);
+                await fetch(`${API_URL}?action=addBuyer&name=${encodeURIComponent(name)}`);
+                await init();
+            }
         }
 
         function filterCards() {
