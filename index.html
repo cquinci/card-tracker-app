@@ -81,7 +81,7 @@
     <nav class="navbar">
         <div class="header-brand">CARD TRACKER PRO</div>
         <div class="header-tabs">
-            <button class="nav-btn active" onclick="showView('dashboard')">Dashboard</button>
+            <button class="nav-btn active" onclick="showView('dashboard')">Dash</button>
             <button class="nav-btn" onclick="showView('inventory')">Inventory</button>
             <button class="nav-btn" onclick="showView('supplies')">Supplies</button>
         </div>
@@ -156,7 +156,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyfgaPEn4cRDZaGG1x71HmcVHehgVjtYRrHDR1WMb2dpqjHHRVgjNRwnsF65G9vkTqNuw/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxz1aR7UdiJijfa1jMsU4R-CNNj_cM3tlq8qEQa-lV28BNQ4n7hX_Qxv9XyqcDjdz_t3w/exec";
         let appData = { inventory: [], dashboard: [], supplies: [], buyers: [], locations: [], globalSupplyTotal: 0 };
 
         function setLoading(b) { document.getElementById('loading-overlay').style.display = b ? 'flex' : 'none'; }
@@ -193,7 +193,6 @@
             const supplyTotal = appData.globalSupplyTotal || 0;
             const netProfit = totalSales - totalCost - supplyTotal;
 
-            // Updated Summary UI
             document.getElementById('global-stats').innerHTML = `
                 <div class="global-summary">
                     <div class="gs-box full"><div class="gs-label">True Net Profit</div><div class="gs-val large" style="color:${netProfit>=0?'#4ade80':'#f87171'}">${fmt(netProfit)}</div></div>
@@ -205,7 +204,6 @@
                     </div>
                 </div>`;
 
-            // Updated Collection Cards UI
             document.getElementById('dashboard-list').innerHTML = appData.dashboard.map(i => {
                 const diff = i.sales - i.cost;
                 const percent = i.cost > 0 ? (diff / i.cost) * 100 : 0;
@@ -229,9 +227,10 @@
         }
 
         function renderInventory(cards) {
-            document.getElementById('inventory-list').innerHTML = cards.map((c, index) => {
+            document.getElementById('inventory-list').innerHTML = cards.map((c) => {
                 const isUnlisted = String(c.listed).toUpperCase() !== 'TRUE' && c.status !== 'Sold';
-                return `<div class="card-item ${isUnlisted ? 'card-unlisted' : ''}" onclick="openCard(${index})">
+                // Pass c.sku instead of index
+                return `<div class="card-item ${isUnlisted ? 'card-unlisted' : ''}" onclick="openCard('${c.sku}')">
                     ${isUnlisted ? '<div class="unlisted-tag">Not Listed</div>' : ''}
                     <div class="status-strip ${c.status === 'Sold' ? 'sold' : 'avail'}"></div>
                     <div class="card-content">
@@ -254,8 +253,11 @@
             });
         }
 
-        function openCard(index) {
-            const card = appData.inventory[index];
+        function openCard(sku) {
+            // Find correct card by SKU
+            const card = appData.inventory.find(c => c.sku === sku);
+            if (!card) return;
+
             document.getElementById('m-title').innerText = card.player;
             document.getElementById('modal-details').innerHTML = `
                 <div class="detail-row">
@@ -265,8 +267,14 @@
                 <div class="detail-row"><span class="detail-label">Status</span><span class="detail-val">${card.status}</span></div>
                 <div class="detail-row"><span class="detail-label">Parallel</span><span class="detail-val">${card.parallel || '-'}</span></div>
                 <div class="detail-row"><span class="detail-label">Comp Price</span><span class="detail-val">${fmt(card.price)}</span></div>
-                ${card.status === 'Sold' ? `<div class="detail-row"><span class="detail-label">Sold For</span><span class="detail-val" style="color:var(--green)">${fmt(card.soldPrice)}</span></div>` : ''}
+                ${card.status === 'Sold' ? `
+                    <div class="detail-row"><span class="detail-label">Sold Price</span><span class="detail-val" style="color:var(--green)">${fmt(card.soldPrice)}</span></div>
+                    <div class="detail-row"><span class="detail-label">Buyer</span><span class="detail-val">${card.soldTo || '-'}</span></div>
+                    <div class="detail-row"><span class="detail-label">Location</span><span class="detail-val">${card.location || '-'}</span></div>
+                ` : ''}
             `;
+            
+            // Fill edit fields
             document.getElementById('e-sku').value = card.sku;
             document.getElementById('e-listed').checked = String(card.listed).toUpperCase() === 'TRUE';
             document.getElementById('e-status').value = card.status;
@@ -274,6 +282,7 @@
             document.getElementById('e-buyer').value = card.soldTo || '';
             document.getElementById('e-location').value = card.location || '';
             document.getElementById('e-shipping').value = card.shipping || '';
+            
             toggleEditMode(false);
             toggleSoldFields();
             document.getElementById('modal').classList.add('open');
@@ -300,6 +309,15 @@
             const params = new URLSearchParams({ action: 'addSupply', item: document.getElementById('s-item').value, date: document.getElementById('s-date').value, paid: document.getElementById('s-paid').value });
             await fetch(`${API_URL}?${params.toString()}`);
             closeSupplyModal(); await init();
+        }
+
+        async function addNewBuyer() {
+            const name = prompt("New Buyer Name:");
+            if(name) {
+                setLoading(true);
+                await fetch(`${API_URL}?action=addBuyer&name=${encodeURIComponent(name)}`);
+                await init();
+            }
         }
 
         function filterCards() {
