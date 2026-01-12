@@ -36,7 +36,7 @@
         .stat-label { font-size: 0.55rem; color: var(--text-light); text-transform: uppercase; }
         .stat-val { font-weight: 700; font-size: 0.8rem; }
 
-        /* Inventory */
+        /* Inventory Grid */
         .card-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .card-item { background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative; min-height: 140px; display: flex; flex-direction: column; cursor: pointer; }
         .card-unlisted { border: 2px solid var(--orange); }
@@ -49,23 +49,21 @@
         .card-parallel-tag { display: inline-block; background: var(--blue-light); color: var(--primary); font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; align-self: flex-start; margin-bottom: 4px; }
         .card-info { font-size: 0.7rem; color: var(--text-light); }
 
-        /* Supplies */
+        /* Supplies Styling */
         .supply-item-block { padding: 8px 0; border-top: 1px solid var(--border); margin-top: 8px; }
         .supply-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; background: var(--bg); padding: 6px; border-radius: 8px; margin-top: 4px; }
-        .sup-label { font-size: 0.55rem; color: var(--text-light); text-transform: uppercase; }
-        .sup-val { font-size: 0.75rem; font-weight: 700; }
         .price-red { color: var(--red); font-weight: 800; }
         #supplies .btn-action { margin-bottom: 25px !important; }
 
-        /* Modals & Inputs */
+        /* Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 200; display: none; justify-content: center; align-items: flex-end; }
         .modal-overlay.open { display: flex; }
         .modal-content { background: var(--surface); width: 100%; border-radius: 20px 20px 0 0; padding: 20px; max-height: 90vh; overflow-y: auto; }
         .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; align-items: center; }
-        .filter-select { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); font-size: 0.85rem; }
         .btn-action { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; }
         .btn-primary { background: var(--primary); color: white; }
         .sku-copy-btn { background: var(--blue-light); color: var(--primary); border: 1px solid var(--primary); padding: 4px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 700; cursor: pointer; margin-left: 8px; }
+        .filter-select { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); font-size: 0.85rem; }
 
         #loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--surface); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
         .spinner { border: 4px solid var(--border); border-top: 4px solid var(--primary); border-radius: 50%; width: 35px; height: 35px; animation: spin 0.8s linear infinite; }
@@ -157,40 +155,51 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxrs8fKlqQ2a40s53Z5VhF0OZinSZfGKBtk65E9gYbBUR9ceFlhzyXdrE1FZujiFOBA/exec";
         let appData = { inventory: [], dashboard: [], supplies: [], buyers: [], locations: [], globalSupplyTotal: 0 };
-        let savedScrollY = 0; // Global scroll tracker
+        let savedScrollY = 0; 
 
         function setLoading(b) { document.getElementById('loading-overlay').style.display = b ? 'flex' : 'none'; }
         function fmt(v) { return new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(v||0); }
         function closeModal() { document.getElementById('modal').classList.remove('open'); }
-        function openSupplyModal() { document.getElementById('supply-modal').classList.add('open'); }
-        function closeSupplyModal() { document.getElementById('supply-modal').classList.remove('open'); }
         function toggleEditMode(e) { document.getElementById('view-mode').style.display = e ? 'none' : 'block'; document.getElementById('edit-mode').style.display = e ? 'block' : 'none'; }
         function toggleSoldFields() { document.getElementById('sold-fields').style.display = document.getElementById('e-status').value === 'Sold' ? 'block' : 'none'; }
         function copyToClipboard(text, btn) { navigator.clipboard.writeText(text); btn.innerText = "COPIED!"; setTimeout(() => btn.innerText = "COPY", 1500); }
+        function closeSupplyModal() { document.getElementById('supply-modal').classList.remove('open'); }
+        function openSupplyModal() { document.getElementById('supply-modal').classList.add('open'); }
 
-		async function init(restoreScroll = false) {
-			if (restoreScroll) savedScrollY = window.scrollY; 
-			setLoading(true);
-			try {
-				const res = await fetch(API_URL);
-				appData = await res.json();
-				
-				renderDashboard();
-				renderInventory(appData.inventory); // Renders full list initially
-				renderSupplies();
-				populateDropdowns();
-		
-				// RE-APPLY FILTERS BEFORE SCROLLING
-				if (restoreScroll) {
-					filterCards(); // This ensures the same cards are on screen as before
-					
-					setTimeout(() => {
-						window.scrollTo({ top: savedScrollY, behavior: 'instant' });
-					}, 150); 
-				}
-			} catch (err) { console.error(err); }
-			setLoading(false);
-		}
+        async function init(restoreScroll = false) {
+            // CAPTURE CURRENT STATE BEFORE REFRESH
+            const currentLot = document.getElementById('filter-sku').value;
+            const currentStatus = document.getElementById('filter-status').value;
+            const currentSearch = document.getElementById('search').value;
+            if (restoreScroll) savedScrollY = window.scrollY; 
+
+            setLoading(true);
+            try {
+                const res = await fetch(API_URL);
+                appData = await res.json();
+                
+                renderDashboard();
+                renderSupplies();
+                
+                // POPULATE DROPDOWNS FIRST
+                populateDropdowns();
+                
+                // RE-APPLY PREVIOUS FILTER VALUES TO DROPDOWNS
+                document.getElementById('filter-sku').value = currentLot;
+                document.getElementById('filter-status').value = currentStatus;
+                document.getElementById('search').value = currentSearch;
+
+                // RENDER FILTERED INVENTORY
+                filterCards();
+
+                if (restoreScroll) {
+                    setTimeout(() => {
+                        window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+                    }, 200); 
+                }
+            } catch (err) { console.error(err); }
+            setLoading(false);
+        }
 
         function renderDashboard() {
             let totalCost = 0, totalSales = 0;
@@ -281,7 +290,29 @@
                 location: document.getElementById('e-location').value
             });
             await fetch(`${API_URL}?${params.toString()}`);
-            closeModal(); await init(true);
+            closeModal(); 
+            await init(true); 
+        }
+
+        function filterCards() {
+            const term = document.getElementById('search').value.toLowerCase();
+            const sku = document.getElementById('filter-sku').value;
+            const status = document.getElementById('filter-status').value;
+            const filtered = appData.inventory.filter(c => (c.player.toLowerCase().includes(term)) && (sku === "" || c.collectionId === sku) && (status === "" || c.status === status));
+            renderInventory(filtered);
+        }
+
+        function populateDropdowns() {
+            document.getElementById('e-buyer').innerHTML = '<option value="">Buyer...</option>' + appData.buyers.map(b => `<option value="${b}">${b}</option>`).join('');
+            document.getElementById('e-location').innerHTML = '<option value="">Loc...</option>' + appData.locations.map(l => `<option value="${l}">${l}</option>`).join('');
+            
+            const lotSelect = document.getElementById('filter-sku');
+            const currentLot = lotSelect.value; // Store before re-populating
+            
+            const skus = [...new Set(appData.inventory.map(i => i.collectionId))];
+            lotSelect.innerHTML = '<option value="">All Lots</option>' + skus.map(s => `<option value="${s}">${s}</option>`).join('');
+            
+            lotSelect.value = currentLot; // Re-set after populating
         }
 
         function renderSupplies() {
@@ -310,22 +341,8 @@
             setLoading(true);
             const params = new URLSearchParams({ action: 'addSupply', item: document.getElementById('s-item').value, date: document.getElementById('s-date').value, paid: document.getElementById('s-paid').value });
             await fetch(`${API_URL}?${params.toString()}`);
-            closeSupplyModal(); await init(true);
-        }
-
-        function filterCards() {
-            const term = document.getElementById('search').value.toLowerCase();
-            const sku = document.getElementById('filter-sku').value;
-            const status = document.getElementById('filter-status').value;
-            const filtered = appData.inventory.filter(c => (c.player.toLowerCase().includes(term)) && (sku === "" || c.collectionId === sku) && (status === "" || c.status === status));
-            renderInventory(filtered);
-        }
-
-        function populateDropdowns() {
-            document.getElementById('e-buyer').innerHTML = '<option value="">Buyer...</option>' + appData.buyers.map(b => `<option value="${b}">${b}</option>`).join('');
-            document.getElementById('e-location').innerHTML = '<option value="">Loc...</option>' + appData.locations.map(l => `<option value="${l}">${l}</option>`).join('');
-            const skus = [...new Set(appData.inventory.map(i => i.collectionId))];
-            document.getElementById('filter-sku').innerHTML = '<option value="">All Lots</option>' + skus.map(s => `<option value="${s}">${s}</option>`).join('');
+            closeSupplyModal(); 
+            await init(true); 
         }
 
         function showView(id) { 
@@ -338,7 +355,12 @@
             window.scrollTo(0,0);
         }
 
-        function goToInventory(sku) { showView('inventory'); document.getElementById('filter-sku').value = sku; filterCards(); }
+        function goToInventory(sku) { 
+            showView('inventory'); 
+            document.getElementById('filter-sku').value = sku; 
+            filterCards(); 
+        }
+
         init();
     </script>
 </body>
