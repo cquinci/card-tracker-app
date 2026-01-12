@@ -28,7 +28,7 @@
         .gs-val { font-size: 1rem; font-weight: 700; }
         .gs-val.large { font-size: 1.6rem; }
 
-        /* Cards & Dashboard */
+        /* Cards */
         .dash-card { background: var(--surface); border-radius: 14px; padding: 1.25rem; margin-bottom: 16px; border: 1px solid var(--border); cursor: pointer; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .dash-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
         .dash-title { font-weight: 800; font-size: 1rem; color: var(--text); line-height: 1.2; }
@@ -36,7 +36,7 @@
         .stat-label { font-size: 0.55rem; color: var(--text-light); text-transform: uppercase; }
         .stat-val { font-weight: 700; font-size: 0.8rem; }
 
-        /* Inventory Grid */
+        /* Inventory */
         .card-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .card-item { background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative; min-height: 140px; display: flex; flex-direction: column; cursor: pointer; }
         .card-unlisted { border: 2px solid var(--orange); }
@@ -52,6 +52,8 @@
         /* Supplies */
         .supply-item-block { padding: 8px 0; border-top: 1px solid var(--border); margin-top: 8px; }
         .supply-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; background: var(--bg); padding: 6px; border-radius: 8px; margin-top: 4px; }
+        .sup-label { font-size: 0.55rem; color: var(--text-light); text-transform: uppercase; }
+        .sup-val { font-size: 0.75rem; font-weight: 700; }
         .price-red { color: var(--red); font-weight: 800; }
         #supplies .btn-action { margin-bottom: 25px !important; }
 
@@ -142,31 +144,53 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="supply-modal" onclick="if(event.target.id==='supply-modal') closeSupplyModal()">
+        <div class="modal-content">
+            <h2 style="margin-bottom:20px; font-size:1.2rem;">Log Supply Purchase</h2>
+            <div class="detail-row"><span>Item</span><input type="text" id="s-item" class="filter-select"></div>
+            <div class="detail-row"><span>Date</span><input type="date" id="s-date" class="filter-select"></div>
+            <div class="detail-row"><span>Total Paid</span><input type="number" id="s-paid" class="filter-select"></div>
+            <button class="btn-action btn-primary" onclick="saveSupply()">Add Supply</button>
+        </div>
+    </div>
+
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyBX5XBnu_OLrv-U9ZGNmUQoRJhNxOPfgZgeiPPqK1YAzIgGsi8FWBzcbZnCG2FQ7wqTg/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxrs8fKlqQ2a40s53Z5VhF0OZinSZfGKBtk65E9gYbBUR9ceFlhzyXdrE1FZujiFOBA/exec";
         let appData = { inventory: [], dashboard: [], supplies: [], buyers: [], locations: [], globalSupplyTotal: 0 };
+        let savedScrollY = 0; // Global scroll tracker
 
         function setLoading(b) { document.getElementById('loading-overlay').style.display = b ? 'flex' : 'none'; }
         function fmt(v) { return new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(v||0); }
         function closeModal() { document.getElementById('modal').classList.remove('open'); }
+        function openSupplyModal() { document.getElementById('supply-modal').classList.add('open'); }
+        function closeSupplyModal() { document.getElementById('supply-modal').classList.remove('open'); }
         function toggleEditMode(e) { document.getElementById('view-mode').style.display = e ? 'none' : 'block'; document.getElementById('edit-mode').style.display = e ? 'block' : 'none'; }
         function toggleSoldFields() { document.getElementById('sold-fields').style.display = document.getElementById('e-status').value === 'Sold' ? 'block' : 'none'; }
         function copyToClipboard(text, btn) { navigator.clipboard.writeText(text); btn.innerText = "COPIED!"; setTimeout(() => btn.innerText = "COPY", 1500); }
 
-        async function init(restoreScroll = false) {
-            const scrollPos = restoreScroll ? window.scrollY : 0;
-            setLoading(true);
-            try {
-                const res = await fetch(API_URL);
-                appData = await res.json();
-                renderDashboard();
-                renderInventory(appData.inventory);
-                renderSupplies();
-                populateDropdowns();
-                if (restoreScroll) window.scrollTo(0, scrollPos);
-            } catch (err) { console.error(err); }
-            setLoading(false);
-        }
+		async function init(restoreScroll = false) {
+			if (restoreScroll) savedScrollY = window.scrollY; 
+			setLoading(true);
+			try {
+				const res = await fetch(API_URL);
+				appData = await res.json();
+				
+				renderDashboard();
+				renderInventory(appData.inventory); // Renders full list initially
+				renderSupplies();
+				populateDropdowns();
+		
+				// RE-APPLY FILTERS BEFORE SCROLLING
+				if (restoreScroll) {
+					filterCards(); // This ensures the same cards are on screen as before
+					
+					setTimeout(() => {
+						window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+					}, 150); 
+				}
+			} catch (err) { console.error(err); }
+			setLoading(false);
+		}
 
         function renderDashboard() {
             let totalCost = 0, totalSales = 0;
@@ -209,8 +233,7 @@
         function renderInventory(cards) {
             document.getElementById('inventory-list').innerHTML = cards.map((c) => {
                 const isUnlisted = String(c.listed).toUpperCase() !== 'TRUE' && c.status !== 'Sold';
-                return `
-                <div class="card-item ${isUnlisted ? 'card-unlisted' : ''}" onclick="openCard('${c.sku}')">
+                return `<div class="card-item ${isUnlisted ? 'card-unlisted' : ''}" onclick="openCard('${c.sku}')">
                     ${isUnlisted ? '<div class="unlisted-tag">Not Listed</div>' : ''}
                     <div class="status-strip ${c.status === 'Sold' ? 'sold' : 'avail'}"></div>
                     <div class="card-content">
@@ -261,21 +284,6 @@
             closeModal(); await init(true);
         }
 
-        function filterCards() {
-            const term = document.getElementById('search').value.toLowerCase();
-            const sku = document.getElementById('filter-sku').value;
-            const status = document.getElementById('filter-status').value;
-            const filtered = appData.inventory.filter(c => (c.player.toLowerCase().includes(term)) && (sku === "" || c.collectionId === sku) && (status === "" || c.status === status));
-            renderInventory(filtered);
-        }
-
-        function populateDropdowns() {
-            document.getElementById('e-buyer').innerHTML = '<option value="">Buyer...</option>' + appData.buyers.map(b => `<option value="${b}">${b}</option>`).join('');
-            document.getElementById('e-location').innerHTML = '<option value="">Loc...</option>' + appData.locations.map(l => `<option value="${l}">${l}</option>`).join('');
-            const skus = [...new Set(appData.inventory.map(i => i.collectionId))];
-            document.getElementById('filter-sku').innerHTML = '<option value="">All Lots</option>' + skus.map(s => `<option value="${s}">${s}</option>`).join('');
-        }
-
         function renderSupplies() {
             document.getElementById('supply-global-header').innerHTML = `
                 <div class="global-summary" style="background:#334155; margin-bottom: 20px;">
@@ -298,6 +306,28 @@
                 </div>`).join('');
         }
 
+        async function saveSupply() {
+            setLoading(true);
+            const params = new URLSearchParams({ action: 'addSupply', item: document.getElementById('s-item').value, date: document.getElementById('s-date').value, paid: document.getElementById('s-paid').value });
+            await fetch(`${API_URL}?${params.toString()}`);
+            closeSupplyModal(); await init(true);
+        }
+
+        function filterCards() {
+            const term = document.getElementById('search').value.toLowerCase();
+            const sku = document.getElementById('filter-sku').value;
+            const status = document.getElementById('filter-status').value;
+            const filtered = appData.inventory.filter(c => (c.player.toLowerCase().includes(term)) && (sku === "" || c.collectionId === sku) && (status === "" || c.status === status));
+            renderInventory(filtered);
+        }
+
+        function populateDropdowns() {
+            document.getElementById('e-buyer').innerHTML = '<option value="">Buyer...</option>' + appData.buyers.map(b => `<option value="${b}">${b}</option>`).join('');
+            document.getElementById('e-location').innerHTML = '<option value="">Loc...</option>' + appData.locations.map(l => `<option value="${l}">${l}</option>`).join('');
+            const skus = [...new Set(appData.inventory.map(i => i.collectionId))];
+            document.getElementById('filter-sku').innerHTML = '<option value="">All Lots</option>' + skus.map(s => `<option value="${s}">${s}</option>`).join('');
+        }
+
         function showView(id) { 
             document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); 
             document.getElementById(id).classList.add('active'); 
@@ -309,7 +339,6 @@
         }
 
         function goToInventory(sku) { showView('inventory'); document.getElementById('filter-sku').value = sku; filterCards(); }
-
         init();
     </script>
 </body>
