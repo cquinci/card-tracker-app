@@ -11,7 +11,6 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding-bottom: 90px; color: var(--text); overflow-x: hidden; position: relative; }
 
-        /* Navbar & Tabs */
         .navbar { background: var(--surface); position: sticky; top: 0; z-index: 100; padding: 0.75rem; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .header-brand { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
         .header-tabs { display: flex; width: 100%; justify-content: space-around; gap: 5px; }
@@ -21,9 +20,7 @@
 
         .view { display: none; padding: 1rem; width: 100%; max-width: 600px; margin: 0 auto; }
         .view.active { display: block; animation: fade 0.2s ease-in; }
-        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Global Summary */
         .global-summary { background: #1e293b; color: white; border-radius: 16px; padding: 1.25rem; margin-bottom: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .gs-box.full { grid-column: 1 / -1; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 5px; text-align: center; }
         .gs-box { text-align: center; padding: 5px; }
@@ -31,7 +28,6 @@
         .gs-val { font-size: 1rem; font-weight: 700; }
         .gs-val.large { font-size: 1.6rem; }
 
-        /* Card Elements */
         .dash-card { background: var(--surface); border-radius: 14px; padding: 1.25rem; margin-bottom: 16px; border: 1px solid var(--border); cursor: pointer; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .dash-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
         .dash-title { font-weight: 800; font-size: 1rem; color: var(--text); line-height: 1.2; }
@@ -39,7 +35,6 @@
         .stat-label { font-size: 0.55rem; color: var(--text-light); text-transform: uppercase; }
         .stat-val { font-weight: 700; font-size: 0.8rem; }
 
-        /* Inventory Grid */
         .card-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .card-item { background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative; min-height: 140px; display: flex; flex-direction: column; cursor: pointer; }
         .card-unlisted { border: 2px solid var(--orange); }
@@ -52,17 +47,16 @@
         .card-parallel-tag { display: inline-block; background: var(--blue-light); color: var(--primary); font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; align-self: flex-start; margin-bottom: 4px; }
         .card-info { font-size: 0.7rem; color: var(--text-light); }
 
-        /* Supplies */
         .supply-item-block { padding: 8px 0; border-top: 1px solid var(--border); margin-top: 8px; }
         .supply-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; background: var(--bg); padding: 6px; border-radius: 8px; margin-top: 4px; }
+        .sup-label { font-size: 0.55rem; color: var(--text-light); text-transform: uppercase; }
+        .sup-val { font-size: 0.75rem; font-weight: 700; }
         .price-red { color: var(--red); font-weight: 800; }
         #supplies .btn-action { margin-bottom: 25px !important; }
 
-        /* Form/Inputs - Optimized font size for mobile focus */
         input, select { font-size: 16px !important; } 
         .filter-select { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); }
 
-        /* Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 200; display: none; justify-content: center; align-items: flex-end; }
         .modal-overlay.open { display: flex; }
         .modal-content { background: var(--surface); width: 100%; border-radius: 20px 20px 0 0; padding: 20px; max-height: 90vh; overflow-y: auto; }
@@ -155,12 +149,12 @@
             <div class="detail-row"><span>Item</span><input type="text" id="s-item" class="filter-select"></div>
             <div class="detail-row"><span>Date</span><input type="date" id="s-date" class="filter-select"></div>
             <div class="detail-row"><span>Total Paid</span><input type="number" id="s-paid" class="filter-select"></div>
-            <button class="btn-action btn-primary" onclick="saveSupply()" style="margin-top:20px;">Add Supply</button>
+            <button class="btn-action btn-primary" onclick="saveSupply()">Add Supply</button>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxrs8fKlqQ2a40s53Z5VhF0OZinSZfGKBtk65E9gYbBUR9ceFlhzyXdrE1FZujiFOBA/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbyOCvguzkmkgj02O9UwJEX9gQ_ps3Gip_5nmz8LzOAHIKXWwhzLehzsM49NhhII8SHJiQ/exec";
         let appData = { inventory: [], dashboard: [], supplies: [], buyers: [], locations: [], globalSupplyTotal: 0 };
         let savedScrollY = 0; 
 
@@ -174,7 +168,6 @@
         function openSupplyModal() { document.getElementById('supply-modal').classList.add('open'); }
 
         async function init(restoreScroll = false) {
-            // STEP 1: CAPTURE CURRENT FILTERS
             const currentLot = document.getElementById('filter-sku').value;
             const currentStatus = document.getElementById('filter-status').value;
             const currentSearch = document.getElementById('search').value;
@@ -188,23 +181,18 @@
                 
                 renderDashboard();
                 renderSupplies();
-                
-                // STEP 2: RE-POPULATE DROPDOWNS
                 populateDropdowns();
                 
-                // STEP 3: FORCE FILTERS BACK TO WHAT THEY WERE
                 document.getElementById('filter-sku').value = currentLot;
                 document.getElementById('filter-status').value = currentStatus;
                 document.getElementById('search').value = currentSearch;
 
-                // STEP 4: RENDER FILTERED VIEW
                 filterCards();
 
-                // STEP 5: DELAYED SCROLL JUMP (Essential for Mobile WebKit)
                 if (restoreScroll) {
                     setTimeout(() => {
                         window.scrollTo({ top: savedScrollY, behavior: 'instant' });
-                    }, 300); // 300ms is the "sweet spot" for mobile browser drawing
+                    }, 300); 
                 }
             } catch (err) { console.error(err); }
             setLoading(false);
@@ -272,6 +260,7 @@
             document.getElementById('m-title').innerText = card.player;
             document.getElementById('modal-details').innerHTML = `
                 <div class="detail-row"><span class="detail-label">SKU</span><span class="detail-val">${card.sku} <button class="sku-copy-btn" onclick="copyToClipboard('${card.sku}', this)">COPY</button></span></div>
+                <div class="detail-row"><span class="detail-label">eBay Title</span><span class="detail-val">${card.ebayTitle || '-'} <button class="sku-copy-btn" onclick="copyToClipboard('${card.ebayTitle}', this)">COPY</button></span></div>
                 <div class="detail-row"><span class="detail-label">Status</span><span class="detail-val">${card.status}</span></div>
                 <div class="detail-row"><span class="detail-label">Set</span><span class="detail-val">${card.set}</span></div>
                 <div class="detail-row"><span class="detail-label">Parallel</span><span class="detail-val">${card.parallel || '-'}</span></div>
@@ -314,7 +303,6 @@
         function populateDropdowns() {
             document.getElementById('e-buyer').innerHTML = '<option value="">Buyer...</option>' + appData.buyers.map(b => `<option value="${b}">${b}</option>`).join('');
             document.getElementById('e-location').innerHTML = '<option value="">Loc...</option>' + appData.locations.map(l => `<option value="${l}">${l}</option>`).join('');
-            
             const lotSelect = document.getElementById('filter-sku');
             const skus = [...new Set(appData.inventory.map(i => i.collectionId))];
             lotSelect.innerHTML = '<option value="">All Lots</option>' + skus.map(s => `<option value="${s}">${s}</option>`).join('');
