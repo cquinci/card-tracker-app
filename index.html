@@ -52,7 +52,6 @@
         .sup-label { font-size: 0.55rem; color: var(--text-light); text-transform: uppercase; }
         .sup-val { font-size: 0.75rem; font-weight: 700; }
         .price-red { color: var(--red); font-weight: 800; }
-        #supplies .btn-action { margin-bottom: 25px !important; }
 
         input, select { font-size: 16px !important; } 
         .filter-select { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); }
@@ -109,7 +108,6 @@
 
     <div id="supplies" class="view">
         <div id="supply-global-header"></div>
-        <button class="btn-action btn-primary" onclick="openSupplyModal()">+ Add New Supply</button>
         <div id="supply-list"></div>
     </div>
 
@@ -143,18 +141,8 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="supply-modal" onclick="if(event.target.id==='supply-modal') closeSupplyModal()">
-        <div class="modal-content">
-            <h2 style="margin-bottom:20px; font-size:1.2rem;">Log Supply Purchase</h2>
-            <div class="detail-row"><span>Item</span><input type="text" id="s-item" class="filter-select"></div>
-            <div class="detail-row"><span>Date</span><input type="date" id="s-date" class="filter-select"></div>
-            <div class="detail-row"><span>Total Paid</span><input type="number" id="s-paid" class="filter-select"></div>
-            <button class="btn-action btn-primary" onclick="saveSupply()">Add Supply</button>
-        </div>
-    </div>
-
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyOCvguzkmkgj02O9UwJEX9gQ_ps3Gip_5nmz8LzOAHIKXWwhzLehzsM49NhhII8SHJiQ/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxmbYX9NKRhqKlUCCun2uXd1cvfU9OB59TCQDq2J-XAQySdYIY9L9_lmoXiCNfYsdIYrQ/exec";
         let appData = { inventory: [], dashboard: [], supplies: [], buyers: [], locations: [], globalSupplyTotal: 0 };
         let savedScrollY = 0; 
 
@@ -164,8 +152,6 @@
         function toggleEditMode(e) { document.getElementById('view-mode').style.display = e ? 'none' : 'block'; document.getElementById('edit-mode').style.display = e ? 'block' : 'none'; }
         function toggleSoldFields() { document.getElementById('sold-fields').style.display = document.getElementById('e-status').value === 'Sold' ? 'block' : 'none'; }
         function copyToClipboard(text, btn) { navigator.clipboard.writeText(text); btn.innerText = "COPIED!"; setTimeout(() => btn.innerText = "COPY", 1500); }
-        function closeSupplyModal() { document.getElementById('supply-modal').classList.remove('open'); }
-        function openSupplyModal() { document.getElementById('supply-modal').classList.add('open'); }
 
         async function init(restoreScroll = false) {
             const currentLot = document.getElementById('filter-sku').value;
@@ -328,14 +314,6 @@
                             </div>
                         </div>`).join('')}
                 </div>`).join('');
-        }
-
-        async function saveSupply() {
-            setLoading(true);
-            const params = new URLSearchParams({ action: 'addSupply', item: document.getElementById('s-item').value, date: document.getElementById('s-date').value, paid: document.getElementById('s-paid').value });
-            await fetch(`${API_URL}?${params.toString()}`);
-            closeSupplyModal(); 
-            await init(true); 
         }
 
         function showView(id) { 
