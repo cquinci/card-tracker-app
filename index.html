@@ -59,7 +59,10 @@
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 200; display: none; justify-content: center; align-items: flex-end; }
         .modal-overlay.open { display: flex; }
         .modal-content { background: var(--surface); width: 100%; border-radius: 20px 20px 0 0; padding: 20px; max-height: 90vh; overflow-y: auto; }
-        .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; align-items: center; }
+        
+        /* Added spacing between labels and inputs */
+        .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; align-items: center; gap: 15px; }
+        .detail-label { white-space: nowrap; }
 
         .btn-action { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; }
         .btn-primary { background: var(--primary); color: white; }
@@ -133,7 +136,14 @@
                 </div>
                 <div id="sold-fields" style="display:none;">
                     <div class="detail-row"><span>Sold Price</span><input type="number" id="e-soldPrice" class="filter-select"></div>
-                    <div class="detail-row"><span>Buyer</span><select id="e-buyer" class="filter-select"></select></div>
+                    <div class="detail-row"><span>Sold Date</span><input type="date" id="e-soldDate" class="filter-select"></div>
+                    <div class="detail-row">
+                        <span>Buyer</span>
+                        <div style="flex:1; display:flex; gap:5px;">
+                            <select id="e-buyer" class="filter-select"></select>
+                            <button onclick="promptNewBuyer()" class="sku-copy-btn" style="margin:0;">+</button>
+                        </div>
+                    </div>
                     <div class="detail-row"><span>Location</span><select id="e-location" class="filter-select"></select></div>
                 </div>
                 <button class="btn-action btn-primary" onclick="saveCard()" style="margin-top:20px;">Save Changes</button>
@@ -142,7 +152,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxmbYX9NKRhqKlUCCun2uXd1cvfU9OB59TCQDq2J-XAQySdYIY9L9_lmoXiCNfYsdIYrQ/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzFYyNiMqRzf3oO8hSvhBJt_i_TCs3fR88jlg3tdtJNCf6cIjCJrSiWUBXs5RUalekgnA/exec";
         let appData = { inventory: [], dashboard: [], supplies: [], buyers: [], locations: [], globalSupplyTotal: 0 };
         let savedScrollY = 0; 
 
@@ -152,6 +162,15 @@
         function toggleEditMode(e) { document.getElementById('view-mode').style.display = e ? 'none' : 'block'; document.getElementById('edit-mode').style.display = e ? 'block' : 'none'; }
         function toggleSoldFields() { document.getElementById('sold-fields').style.display = document.getElementById('e-status').value === 'Sold' ? 'block' : 'none'; }
         function copyToClipboard(text, btn) { navigator.clipboard.writeText(text); btn.innerText = "COPIED!"; setTimeout(() => btn.innerText = "COPY", 1500); }
+
+        async function promptNewBuyer() {
+            const name = prompt("Enter new buyer name:");
+            if (name) {
+                setLoading(true);
+                await fetch(`${API_URL}?action=addBuyer&name=${encodeURIComponent(name)}`);
+                await init(true);
+            }
+        }
 
         async function init(restoreScroll = false) {
             const currentLot = document.getElementById('filter-sku').value;
@@ -252,11 +271,14 @@
                 <div class="detail-row"><span class="detail-label">Parallel</span><span class="detail-val">${card.parallel || '-'}</span></div>
                 <div class="detail-row"><span class="detail-label">Comp Price</span><span class="detail-val">${fmt(card.price)}</span></div>
                 ${card.status === 'Sold' ? `<div class="detail-row"><span class="detail-label">Sold Price</span><span class="detail-val" style="color:var(--green)">${fmt(card.soldPrice)}</span></div>` : ''}
+                ${card.status === 'Sold' ? `<div class="detail-row"><span class="detail-label">Sold Date</span><span class="detail-val">${card.soldDate || '-'}</span></div>` : ''}
+                ${card.status === 'Sold' ? `<div class="detail-row"><span class="detail-label">Buyer</span><span class="detail-val">${card.soldTo || '-'}</span></div>` : ''}
             `;
             document.getElementById('e-sku').value = card.sku;
             document.getElementById('e-listed').checked = String(card.listed).toUpperCase() === 'TRUE';
             document.getElementById('e-status').value = card.status;
             document.getElementById('e-soldPrice').value = card.soldPrice || '';
+            document.getElementById('e-soldDate').value = card.soldDateRaw || ''; // Using raw date for input
             document.getElementById('e-buyer').value = card.soldTo || '';
             document.getElementById('e-location').value = card.location || '';
             toggleEditMode(false); toggleSoldFields();
@@ -270,6 +292,7 @@
                 action: 'update', sku: document.getElementById('e-sku').value,
                 listed: document.getElementById('e-listed').checked, status: status,
                 soldPrice: document.getElementById('e-soldPrice').value,
+                soldDate: document.getElementById('e-soldDate').value, // Send date
                 soldTo: document.getElementById('e-buyer').value,
                 location: document.getElementById('e-location').value
             });
