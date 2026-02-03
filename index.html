@@ -44,6 +44,10 @@
         .status-strip.avail { background: var(--primary); }
         .card-content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
         .card-player { font-weight: 800; font-size: 0.85rem; line-height: 1.1; margin-bottom: 4px; }
+        
+        /* Sub-style for the SKU on the card */
+        .card-sku-sub { font-size: 0.65rem; color: var(--text-light); font-weight: 400; display: block; margin-top: 2px; }
+        
         .card-parallel-tag { display: inline-block; background: var(--blue-light); color: var(--primary); font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; align-self: flex-start; margin-bottom: 4px; }
         .card-info { font-size: 0.7rem; color: var(--text-light); }
 
@@ -60,7 +64,6 @@
         .modal-overlay.open { display: flex; }
         .modal-content { background: var(--surface); width: 100%; border-radius: 20px 20px 0 0; padding: 20px; max-height: 90vh; overflow-y: auto; }
         
-        /* Added spacing between labels and inputs */
         .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; align-items: center; gap: 15px; }
         .detail-label { white-space: nowrap; }
 
@@ -152,7 +155,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzFYyNiMqRzf3oO8hSvhBJt_i_TCs3fR88jlg3tdtJNCf6cIjCJrSiWUBXs5RUalekgnA/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwOxk3XxlpNGIbkzSQmjVH0PDNYBCntmCQerKWBCksPZWvJNGTO62-S3t_vlbIpgE3qnA/exec";
         let appData = { inventory: [], dashboard: [], supplies: [], buyers: [], locations: [], globalSupplyTotal: 0 };
         let savedScrollY = 0; 
 
@@ -241,6 +244,7 @@
             }).join('');
         }
 
+        // UPDATED: renderInventory now includes the SKU display
         function renderInventory(cards) {
             document.getElementById('inventory-list').innerHTML = cards.map((c) => {
                 const isUnlisted = String(c.listed).toUpperCase() !== 'TRUE' && c.status !== 'Sold';
@@ -248,7 +252,10 @@
                     ${isUnlisted ? '<div class="unlisted-tag">Not Listed</div>' : ''}
                     <div class="status-strip ${c.status === 'Sold' ? 'sold' : 'avail'}"></div>
                     <div class="card-content">
-                        <div class="card-player">${c.player}</div>
+                        <div>
+                            <div class="card-player">${c.player}</div>
+                            <div class="card-sku-sub">#${c.sku}</div>
+                        </div>
                         <div class="card-parallel-tag">${c.parallel || 'Base'}</div>
                         <div class="card-info">${c.year} ${c.set}</div>
                         <div style="font-weight:800; font-size:0.85rem; color:${c.status === 'Sold' ? 'var(--green)' : 'var(--text)'}">
@@ -278,7 +285,7 @@
             document.getElementById('e-listed').checked = String(card.listed).toUpperCase() === 'TRUE';
             document.getElementById('e-status').value = card.status;
             document.getElementById('e-soldPrice').value = card.soldPrice || '';
-            document.getElementById('e-soldDate').value = card.soldDateRaw || ''; // Using raw date for input
+            document.getElementById('e-soldDate').value = card.soldDateRaw || ''; 
             document.getElementById('e-buyer').value = card.soldTo || '';
             document.getElementById('e-location').value = card.location || '';
             toggleEditMode(false); toggleSoldFields();
@@ -292,7 +299,7 @@
                 action: 'update', sku: document.getElementById('e-sku').value,
                 listed: document.getElementById('e-listed').checked, status: status,
                 soldPrice: document.getElementById('e-soldPrice').value,
-                soldDate: document.getElementById('e-soldDate').value, // Send date
+                soldDate: document.getElementById('e-soldDate').value, 
                 soldTo: document.getElementById('e-buyer').value,
                 location: document.getElementById('e-location').value
             });
