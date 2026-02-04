@@ -57,7 +57,6 @@
         input, select { font-size: 16px !important; width: 100%; } 
         .filter-select { padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); }
 
-        /* MOBILE FILTER OPTIMIZATION */
         .filter-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 8px; }
 
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 200; display: none; justify-content: center; align-items: flex-end; }
@@ -123,6 +122,13 @@
                 <select id="filter-set" class="filter-select" onchange="filterCards()"><option value="">All Sets</option></select>
                 <select id="filter-year" class="filter-select" onchange="filterCards()"><option value="">All Years</option></select>
             </div>
+            <div class="filter-grid">
+                <select id="filter-listed" class="filter-select" onchange="filterCards()">
+                    <option value="">All Listed Status</option>
+                    <option value="Listed">Listed</option>
+                    <option value="Not Listed">Not Listed</option>
+                </select>
+                <div style="visibility: hidden;">Spacer</div> </div>
             <button class="btn-clear" onclick="clearInventoryFilters()">Clear Filters</button>
         </div>
         <div id="inventory-list" class="card-list"></div>
@@ -188,6 +194,7 @@
             document.getElementById('filter-status').value = '';
             document.getElementById('filter-set').value = '';
             document.getElementById('filter-year').value = '';
+            document.getElementById('filter-listed').value = '';
             filterCards();
         }
 
@@ -214,6 +221,7 @@
             const currentDashDate = document.getElementById('dash-filter-date').value;
             const currentSet = document.getElementById('filter-set').value;
             const currentYear = document.getElementById('filter-year').value;
+            const currentListed = document.getElementById('filter-listed').value;
             
             if (restoreScroll) savedScrollY = window.scrollY; 
 
@@ -231,6 +239,7 @@
                 document.getElementById('dash-filter-date').value = currentDashDate;
                 document.getElementById('filter-set').value = currentSet;
                 document.getElementById('filter-year').value = currentYear;
+                document.getElementById('filter-listed').value = currentListed;
 
                 renderDashboard();
                 renderSupplies();
@@ -363,6 +372,7 @@
             const status = document.getElementById('filter-status').value;
             const setFilter = document.getElementById('filter-set').value;
             const yearFilter = document.getElementById('filter-year').value;
+            const listedFilter = document.getElementById('filter-listed').value;
             
             const filtered = appData.inventory.filter(c => {
                 const matchesSearch = (c.player.toLowerCase().includes(term) || String(c.sku).toLowerCase().includes(term));
@@ -370,7 +380,14 @@
                 const matchesStatus = (status === "" || c.status === status);
                 const matchesSet = (setFilter === "" || c.set === setFilter);
                 const matchesYear = (yearFilter === "" || String(c.year) === yearFilter);
-                return matchesSearch && matchesLot && matchesStatus && matchesSet && matchesYear;
+                
+                // Listed Logic (matching the visual tag logic)
+                const isListed = String(c.listed).toUpperCase() === 'TRUE';
+                let matchesListed = true;
+                if (listedFilter === "Listed") matchesListed = isListed;
+                if (listedFilter === "Not Listed") matchesListed = !isListed;
+
+                return matchesSearch && matchesLot && matchesStatus && matchesSet && matchesYear && matchesListed;
             });
             renderInventory(filtered);
         }
