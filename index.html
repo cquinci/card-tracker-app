@@ -44,10 +44,7 @@
         .status-strip.avail { background: var(--primary); }
         .card-content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
         .card-player { font-weight: 800; font-size: 0.85rem; line-height: 1.1; margin-bottom: 4px; }
-        
-        /* Sub-style for the SKU on the card */
         .card-sku-sub { font-size: 0.65rem; color: var(--text-light); font-weight: 400; display: block; margin-top: 2px; }
-        
         .card-parallel-tag { display: inline-block; background: var(--blue-light); color: var(--primary); font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; align-self: flex-start; margin-bottom: 4px; }
         .card-info { font-size: 0.7rem; color: var(--text-light); }
 
@@ -69,6 +66,7 @@
 
         .btn-action { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; }
         .btn-primary { background: var(--primary); color: white; }
+        .btn-clear { background: var(--text-light); color: white; font-size: 0.75rem; padding: 8px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; width: 100%; margin-bottom: 15px; }
         .sku-copy-btn { background: var(--blue-light); color: var(--primary); border: 1px solid var(--primary); padding: 4px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 700; margin-left: 8px; }
 
         #loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--surface); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
@@ -94,20 +92,35 @@
 
     <div id="dashboard" class="view active">
         <div id="global-stats"></div>
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <select id="dash-filter-source" class="filter-select" onchange="renderDashboard()">
+                <option value="">All Sources</option>
+            </select>
+            <select id="dash-filter-date" class="filter-select" onchange="renderDashboard()">
+                <option value="">All Dates</option>
+            </select>
+        </div>
+        <button class="btn-clear" onclick="clearDashboardFilters()">Clear Filters</button>
         <div id="dashboard-list"></div>
     </div>
 
     <div id="inventory" class="view">
         <div class="controls" style="margin-bottom:15px;">
-            <input type="text" id="search" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-bottom:8px;" placeholder="Search Player..." onkeyup="filterCards()">
-            <div style="display:flex; gap:8px;">
+            <input type="text" id="search" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-bottom:8px;" placeholder="Search Player or SKU..." onkeyup="filterCards()">
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
                 <select id="filter-sku" class="filter-select" onchange="filterCards()"><option value="">All Lots</option></select>
                 <select id="filter-status" class="filter-select" onchange="filterCards()">
-                    <option value="">Status</option>
+                    <option value="">All Status</option>
                     <option value="Available">Available</option>
                     <option value="Sold">Sold</option>
                 </select>
             </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+                <select id="filter-set" class="filter-select" onchange="filterCards()"><option value="">All Sets</option></select>
+                <select id="filter-year" class="filter-select" onchange="filterCards()"><option value="">All Years</option></select>
+            </div>
+            <button class="btn-clear" onclick="clearInventoryFilters()">Clear Filters</button>
         </div>
         <div id="inventory-list" class="card-list"></div>
     </div>
@@ -166,6 +179,21 @@
         function toggleSoldFields() { document.getElementById('sold-fields').style.display = document.getElementById('e-status').value === 'Sold' ? 'block' : 'none'; }
         function copyToClipboard(text, btn) { navigator.clipboard.writeText(text); btn.innerText = "COPIED!"; setTimeout(() => btn.innerText = "COPY", 1500); }
 
+        function clearInventoryFilters() {
+            document.getElementById('search').value = '';
+            document.getElementById('filter-sku').value = '';
+            document.getElementById('filter-status').value = '';
+            document.getElementById('filter-set').value = '';
+            document.getElementById('filter-year').value = '';
+            filterCards();
+        }
+
+        function clearDashboardFilters() {
+            document.getElementById('dash-filter-source').value = '';
+            document.getElementById('dash-filter-date').value = '';
+            renderDashboard();
+        }
+
         async function promptNewBuyer() {
             const name = prompt("Enter new buyer name:");
             if (name) {
@@ -177,8 +205,12 @@
 
         async function init(restoreScroll = false) {
             const currentLot = document.getElementById('filter-sku').value;
-            const currentStatus = document.getElementById('filter-status').value;
+            const currentInvStatus = document.getElementById('filter-status').value;
             const currentSearch = document.getElementById('search').value;
+            const currentDashSource = document.getElementById('dash-filter-source').value;
+            const currentDashDate = document.getElementById('dash-filter-date').value;
+            const currentSet = document.getElementById('filter-set').value;
+            const currentYear = document.getElementById('filter-year').value;
             
             if (restoreScroll) savedScrollY = window.scrollY; 
 
@@ -187,14 +219,18 @@
                 const res = await fetch(API_URL);
                 appData = await res.json();
                 
+                populateDropdowns();
+
+                document.getElementById('filter-sku').value = currentLot;
+                document.getElementById('filter-status').value = currentInvStatus;
+                document.getElementById('search').value = currentSearch;
+                document.getElementById('dash-filter-source').value = currentDashSource;
+                document.getElementById('dash-filter-date').value = currentDashDate;
+                document.getElementById('filter-set').value = currentSet;
+                document.getElementById('filter-year').value = currentYear;
+
                 renderDashboard();
                 renderSupplies();
-                populateDropdowns();
-                
-                document.getElementById('filter-sku').value = currentLot;
-                document.getElementById('filter-status').value = currentStatus;
-                document.getElementById('search').value = currentSearch;
-
                 filterCards();
 
                 if (restoreScroll) {
@@ -207,8 +243,12 @@
         }
 
         function renderDashboard() {
-            let totalCost = 0, totalSales = 0;
-            appData.dashboard.forEach(i => { totalCost += i.cost; totalSales += i.sales; });
+            let totalCost = 0, totalSales = 0, totalCardsSold = 0;
+            appData.dashboard.forEach(i => { 
+                totalCost += i.cost; 
+                totalSales += i.sales; 
+                totalCardsSold += (parseInt(i.soldCards) || 0);
+            });
             const supplyTotal = appData.globalSupplyTotal || 0;
             const netProfit = totalSales - totalCost - supplyTotal;
 
@@ -217,13 +257,20 @@
                     <div class="gs-box full"><div class="gs-label">True Net Profit</div><div class="gs-val large" style="color:${netProfit>=0?'#4ade80':'#f87171'}">${fmt(netProfit)}</div></div>
                     <div class="gs-box"><div class="gs-label">Spent</div><div class="gs-val">${fmt(totalCost)}</div></div>
                     <div class="gs-box"><div class="gs-label">Sold</div><div class="gs-val">${fmt(totalSales)}</div></div>
-                    <div class="gs-box full" style="border-top:1px solid rgba(255,255,255,0.1); margin-top:5px; padding-top:10px;">
-                        <div class="gs-label">Supplies Deducted</div>
-                        <div class="gs-val" style="color:var(--red)">-${fmt(supplyTotal)}</div>
-                    </div>
+                    <div class="gs-box"><div class="gs-label">Cards Sold</div><div class="gs-val">${totalCardsSold}</div></div>
+                    <div class="gs-box"><div class="gs-label">Supply Total</div><div class="gs-val" style="color:var(--red)">-${fmt(supplyTotal)}</div></div>
                 </div>`;
 
-            document.getElementById('dashboard-list').innerHTML = appData.dashboard.map(i => {
+            const sourceFilter = document.getElementById('dash-filter-source').value;
+            const dateFilter = document.getElementById('dash-filter-date').value;
+
+            const filteredDash = appData.dashboard.filter(i => {
+                const matchesSource = sourceFilter === "" || i.source === sourceFilter;
+                const matchesDate = dateFilter === "" || i.id.includes(dateFilter);
+                return matchesSource && matchesDate;
+            });
+
+            document.getElementById('dashboard-list').innerHTML = filteredDash.map(i => {
                 const diff = i.sales - i.cost;
                 const percent = i.cost > 0 ? (diff / i.cost) * 100 : 0;
                 return `
@@ -244,7 +291,6 @@
             }).join('');
         }
 
-        // UPDATED: renderInventory now includes the SKU display
         function renderInventory(cards) {
             document.getElementById('inventory-list').innerHTML = cards.map((c) => {
                 const isUnlisted = String(c.listed).toUpperCase() !== 'TRUE' && c.status !== 'Sold';
@@ -310,18 +356,45 @@
 
         function filterCards() {
             const term = document.getElementById('search').value.toLowerCase();
-            const sku = document.getElementById('filter-sku').value;
+            const skuLot = document.getElementById('filter-sku').value;
             const status = document.getElementById('filter-status').value;
-            const filtered = appData.inventory.filter(c => (c.player.toLowerCase().includes(term)) && (sku === "" || c.collectionId === sku) && (status === "" || c.status === status));
+            const setFilter = document.getElementById('filter-set').value;
+            const yearFilter = document.getElementById('filter-year').value;
+            
+            const filtered = appData.inventory.filter(c => {
+                const matchesSearch = (c.player.toLowerCase().includes(term) || String(c.sku).toLowerCase().includes(term));
+                const matchesLot = (skuLot === "" || c.collectionId === skuLot);
+                const matchesStatus = (status === "" || c.status === status);
+                const matchesSet = (setFilter === "" || c.set === setFilter);
+                const matchesYear = (yearFilter === "" || String(c.year) === yearFilter);
+                return matchesSearch && matchesLot && matchesStatus && matchesSet && matchesYear;
+            });
             renderInventory(filtered);
         }
 
         function populateDropdowns() {
             document.getElementById('e-buyer').innerHTML = '<option value="">Buyer...</option>' + appData.buyers.map(b => `<option value="${b}">${b}</option>`).join('');
             document.getElementById('e-location').innerHTML = '<option value="">Loc...</option>' + appData.locations.map(l => `<option value="${l}">${l}</option>`).join('');
+            
             const lotSelect = document.getElementById('filter-sku');
-            const skus = [...new Set(appData.inventory.map(i => i.collectionId))];
+            const skus = [...new Set(appData.inventory.map(i => i.collectionId))].sort();
             lotSelect.innerHTML = '<option value="">All Lots</option>' + skus.map(s => `<option value="${s}">${s}</option>`).join('');
+
+            const setSelect = document.getElementById('filter-set');
+            const sets = [...new Set(appData.inventory.map(i => i.set).filter(Boolean))].sort();
+            setSelect.innerHTML = '<option value="">All Sets</option>' + sets.map(s => `<option value="${s}">${s}</option>`).join('');
+
+            const yearSelect = document.getElementById('filter-year');
+            const years = [...new Set(appData.inventory.map(i => i.year).filter(Boolean))].sort((a,b) => b-a);
+            yearSelect.innerHTML = '<option value="">All Years</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+
+            const sourceSelect = document.getElementById('dash-filter-source');
+            const sources = [...new Set(appData.dashboard.map(i => i.source))].sort();
+            sourceSelect.innerHTML = '<option value="">All Sources</option>' + sources.map(s => `<option value="${s}">${s}</option>`).join('');
+
+            const dateSelect = document.getElementById('dash-filter-date');
+            const dates = [...new Set(appData.dashboard.map(i => i.id.split('-')[1]).filter(Boolean))].sort();
+            dateSelect.innerHTML = '<option value="">All Dates</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join('');
         }
 
         function renderSupplies() {
